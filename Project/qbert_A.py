@@ -207,34 +207,38 @@ def optimize_model():
     optimizer.step()
 
 def run_model(count = 100):
-    """You should probably not modify this, other than
-    to load qbert.
-    """
-    env = gym.make("ALE/Qbert-v5", render_mode="human")
-    reward = 0
-    terminated = False
-    special_data = {}
-    special_data['ale.lives'] = 3
-    observation = env.reset()[0]
+    averagePerformance = 0
+    for i in range(50):
+        """You should probably not modify this, other than
+        to load qbert.
+        """
+        env = gym.make("ALE/Qbert-v5")#, render_mode="human")
+        reward = 0
+        terminated = False
+        special_data = {}
+        special_data['ale.lives'] = 3
+        observation = env.reset()[0]
 
-    # Initialize the environment and get it's state
-    state, info = env.reset()
-    state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-    while not terminated:
-    #for t in range(count):
-        action = select_action(state)
-        observation, reward, terminated, truncated, _ = env.step(action.item())
-        reward = torch.tensor([reward], device=device)
-        averagePerformance += reward
-        done = terminated or truncated
+        # Initialize the environment and get it's state
+        state, info = env.reset()
+        state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+        while not terminated:
+        #for t in range(count):
+            action = select_action(state)
+            observation, reward, terminated, truncated, _ = env.step(action.item())
+            averagePerformance += reward
+            reward = torch.tensor([reward], device=device)
+            done = terminated or truncated
 
-        if terminated:
-            state = None
-        else:
-            state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
-        env.render()
-        if done:
-            break
+            if terminated:
+                state = None
+            else:
+                state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
+            #env.render()
+            if done:
+                break
+    averagePerformance = averagePerformance/50
+    print("AVERAGE PERFORMANCE SCORE: ", averagePerformance)
 
 
 
@@ -243,7 +247,7 @@ def train_model():
     """ You may want to modify this method: for instance,
     you might want to skip frames during training."""
     if torch.cuda.is_available():
-        num_episodes = 10
+        num_episodes = 1000
     else:
         num_episodes = 200
 
@@ -255,6 +259,7 @@ def train_model():
         for t in count():
             action = select_action(state)
             observation, reward, terminated, truncated, _ = env.step(action.item()) 
+            averageTrain += reward
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
             reward -= (4 - info.get("lives")) * 50
@@ -265,7 +270,7 @@ def train_model():
 
             # Store the transition in memory
             memory.push(state, action, next_state, reward)
-            averageTrain += reward
+            
             # Move to the next state
             state = next_state
 
@@ -290,15 +295,12 @@ def train_model():
 train_model()
 torch.save(policy_net.state_dict(), args.save)
 
-averagePerformance = 0
-
 print('Complete')
 plot_durations(show_result=True)
 plt.ioff()
 plt.show()
-for i in range(50):
-    run_model(1000)
 
-print("AVERAGE PERFORMANCE SCORE: ", averagePerformance)
+run_model(1000)
+
 
 
