@@ -494,7 +494,7 @@ if __name__ == '__main__':
         # want to change the amount of output.
         logger.set_level(logger.INFO)
 
-        env = gym.make(args.env_id)#, render_mode="human")
+        env = gym.make(args.env_id, render_mode="human")
 
         # You provide the directory to write to (can be an existing
         # directory, including one with existing data -- all monitor files
@@ -520,10 +520,10 @@ if __name__ == '__main__':
             
             action = agent.act(observation, reward, terminated)
             actionPath.append(int(action))
-            #pdb.set_trace()
+            pdb.set_trace()
             observation, reward, terminated, truncated, info = env.step(action)
             score += reward
-            #env.render()
+            env.render()
         
         if(len(values) < 10):
             values.append(score);

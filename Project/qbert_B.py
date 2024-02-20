@@ -230,6 +230,7 @@ def run_model(count = 100):
             break
 
 def train_model():
+    averageTrain = 0
     """ You may want to modify this method: for instance,
     you might want to skip frames during training."""
     if torch.cuda.is_available():
@@ -254,7 +255,7 @@ def train_model():
 
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
-            reward -= (4 - info.get("lives")) * 50;
+            reward -= (4 - info.get("lives")) * 50
             if terminated:
                 next_state = None
             else:
@@ -262,7 +263,7 @@ def train_model():
 
             # Store the transition in memory
             memory.push(state, action, next_state, reward)
-
+            averageTrain += reward
             # Move to the next state
             state = next_state
 
@@ -281,6 +282,8 @@ def train_model():
                 episode_durations.append(t + 1)
                 plot_durations()
                 break
+    averageTrain = averageTrain / num_episodes
+    print("AVERAGE TRAINING SCORE: ", averageTrain)
 
 train_model()
 torch.save(policy_net.state_dict(), args.save)
