@@ -1,18 +1,15 @@
-import gymnasium as gym
-import math
-import random
-import matplotlib
-import matplotlib.pyplot as plt
 from collections import namedtuple, deque
 from itertools import count
-import pdb
+import random
+import math
+import argparse
+import gymnasium as gym
+import matplotlib
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import numpy as np
-import argparse
-from agent import Agent
 
 env = gym.make("ALE/Qbert-v5")#"CartPole-v1")
 
@@ -98,7 +95,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('-s', '--save', default="qbertA.pytorch", help="file to save model to", type=str)
-parser.add_argument('-l', '--load', default=None, help="file to load model from", type=str)
+parser.add_argument('-l', '--load', default="qbertA.pytorch", help="file to load model from", type=str)
 
 args = parser.parse_args()
 
@@ -297,10 +294,8 @@ torch.save(policy_net.state_dict(), args.save)
 
 print('Complete')
 plot_durations(show_result=True)
-plt.ioff()
-plt.show()
-
+#plt.ioff()
+#plt.show()
 run_model(1000)
-
 
 

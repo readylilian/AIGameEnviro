@@ -1,18 +1,16 @@
-import gymnasium as gym
-import math
-import random
-import matplotlib
-import matplotlib.pyplot as plt
 from collections import namedtuple, deque
 from itertools import count
-import pdb
+import random
+import math
+import argparse
+import json
+import gymnasium as gym
+import matplotlib
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import numpy as np
-import argparse
-import json
 
 env = gym.make("ALE/Qbert-v5")#"CartPole-v1")
 
@@ -98,7 +96,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('-s', '--save', default="qbertB.pytorch", help="file to save model to", type=str)
-parser.add_argument('-l', '--load', default=None, help="file to load model from", type=str)
+parser.add_argument('-l', '--load', default="qbertB.pytorch", help="file to load model from", type=str)
 
 args = parser.parse_args()
 
@@ -222,7 +220,8 @@ def run_model(count = 100):
         # Initialize the environment and get it's state
         state, info = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-        for t in range(count):
+        while not terminated:
+        #for t in range(count):
             action = select_action(state)
             observation, reward, terminated, truncated, _ = env.step(action.item())
             averagePerformance += reward
@@ -299,8 +298,8 @@ torch.save(policy_net.state_dict(), args.save)
 
 print('Complete')
 plot_durations(show_result=True)
-plt.ioff()
-plt.show()
+#plt.ioff()
+#plt.show()
 run_model(1000)
 
 
