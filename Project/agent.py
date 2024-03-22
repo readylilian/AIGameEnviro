@@ -483,7 +483,7 @@ if __name__ == '__main__':
 
     dict = {}
     values=[]
-    for i in range(1):
+    for i in range(200):
         
         actionPath = []
         parser = argparse.ArgumentParser(description=None)
@@ -494,8 +494,8 @@ if __name__ == '__main__':
         # want to change the amount of output.
         logger.set_level(logger.INFO)
 
-        env = gym.make(args.env_id, render_mode="human")
-
+        env = gym.make(args.env_id)#, render_mode="human")
+        state, info = env.reset()
         # You provide the directory to write to (can be an existing
         # directory, including one with existing data -- all monitor files
         # will be namespaced). You can also dump to a tempdir if you'd
@@ -515,15 +515,18 @@ if __name__ == '__main__':
         observation = env.reset()[0]
         step = 0
         
-
+        last_life = info.get("lives")
         while not terminated:
             
             action = agent.act(observation, reward, terminated)
             actionPath.append(int(action))
-            pdb.set_trace()
+            #pdb.set_trace()
             observation, reward, terminated, truncated, info = env.step(action)
+            if last_life != info.get("lives"):
+                score -= (4 - info.get("lives")) * 50
+                last_life = info.get("lives")
             score += reward
-            env.render()
+            #env.render()
         
         if(len(values) < 10):
             values.append(score);

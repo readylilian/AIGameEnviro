@@ -21,6 +21,10 @@ public class AStar : MonoBehaviour
 
     public static IEnumerator search(GameObject start, GameObject end, Heuristic heuristic, float waitTime, bool colorTiles = false, bool displayCosts = false, Stack<NodeRecord> path = null)
     {
+        if (path == null)
+        {
+            path = new Stack<NodeRecord>();
+        }
         // Starts the stopwatch.
         watch.Start();
 

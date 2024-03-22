@@ -253,13 +253,21 @@ def train_model():
         # Initialize the environment and get it's state
         state, info = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+        last_life = info.get("lives")
+        last_action = 0
         for t in count():
             action = select_action(state)
             observation, reward, terminated, truncated, _ = env.step(action.item()) 
+            if action != last_action:
+                reward += 1
+                last_action = action
             averageTrain += reward
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
-            reward -= (4 - info.get("lives")) * 50
+            if last_life != _.get("lives"):
+                reward -= (4 - _.get("lives")) * 50
+                last_life = _.get("lives")
+            
             if terminated:
                 next_state = None
             else:

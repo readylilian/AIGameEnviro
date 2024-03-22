@@ -248,12 +248,15 @@ def train_model():
         num_episodes = 200
 
     for i_episode in range(num_episodes):
+
         with open(f'output{random.randrange(0,10)}.txt') as f:
             data = json.load(f)
         print("i: " + str(i_episode))
         # Initialize the environment and get it's state
         state, info = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+        last_life = info.get("lives")
+        last_action = 0
         for t in count():
             if t < len(data):
                 action = torch.tensor([[data[t]]],dtype=torch.int64, device=device)
@@ -261,10 +264,15 @@ def train_model():
             else:
                 action = select_action(state) #⭐
                 observation, reward, terminated, truncated, _ = env.step(action.item())
+            if action != last_action:
+                reward += 1
+                last_action = action
             averageTrain += reward
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
-            reward -= (4 - info.get("lives")) * 50
+            if last_life != _.get("lives"):
+                reward -= (4 - _.get("lives")) * 50
+                last_life = _.get("lives")
             if terminated:
                 next_state = None
             else:

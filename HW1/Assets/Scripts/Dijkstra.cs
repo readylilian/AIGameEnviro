@@ -20,6 +20,10 @@ public class Dijkstra : MonoBehaviour
 
     public static IEnumerator search(GameObject start, GameObject end, float waitTime, bool colorTiles = false, bool displayCosts = false, Stack<NodeRecord> path = null)
     {
+        if(path == null)
+        {
+            path = new Stack<NodeRecord>();
+        }
         // Starts the stopwatch.
         watch.Start();
 
