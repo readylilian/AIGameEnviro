@@ -144,9 +144,9 @@ public class PlayerInterface : MonoBehaviour
                 //Once we have enough moves for our sequence start registering them and predicting moves
                 if (sequence.Count == NGramPredictor.nValue)
                 {
-                    NGramPredictor.registerSequence(sequence);
                     //Then use the previous window of moves to predict the next
                     predMove = NGramPredictor.getMostLikely(sequence.GetRange(0, NGramPredictor.nValue - 1).ToArray());
+                    NGramPredictor.registerSequence(sequence);
                 }
                 // Ask the ngram AI to predict what the player will choose..
                 // You will need to implement this code and any history tracking it requires.
@@ -181,7 +181,10 @@ public class PlayerInterface : MonoBehaviour
 
                 // Output the combined output string to the log.
                 Debug.Log(output);
-                resultText.text = output;
+                if(resultText != null)
+                {
+                    resultText.text = output;
+                }
             }
         }
     }
