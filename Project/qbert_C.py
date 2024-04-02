@@ -98,7 +98,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('-s', '--save', default="qbertC.pytorch", help="file to save model to", type=str)
-parser.add_argument('-l', '--load', default=None, help="file to load model from", type=str)
+parser.add_argument('-l', '--load', default="qbertC.pytorch", help="file to load model from", type=str)
 
 args = parser.parse_args()
 
@@ -213,6 +213,11 @@ def run_model(count = 100):
         to load qbert.
         """
         env = gym.make("ALE/Qbert-v5")#, render_mode="human")
+        reward = 0
+        terminated = False
+        special_data = {}
+        special_data['ale.lives'] = 3
+        observation = env.reset()[0]
 
         # Initialize the environment and get it's state
         state, info = env.reset()
@@ -231,8 +236,8 @@ def run_model(count = 100):
             #env.render()
             if done:
                 break
-        averagePerformance = averagePerformance/50
-        print("AVERAGE PERFORMANCE SCORE: ", averagePerformance)
+    averagePerformance = averagePerformance/50
+    print("AVERAGE PERFORMANCE SCORE: ", averagePerformance)
 
 def train_model():
     averageTrain = 0

@@ -3,12 +3,15 @@ using RPS;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using TMPro;
 
 /// <summary>
 /// This class receives input from the player, queries the AI for predictions, and updates the total wins/losses.
 /// </summary>
 public class PlayerInterface : MonoBehaviour
 {
+    [SerializeField]
+    TMP_Text resultText;
     // Records the input from the user as a char: 'r', 'p', or 's'
     private char input = '0';
 
@@ -27,42 +30,63 @@ public class PlayerInterface : MonoBehaviour
 
         public KeyDataRecord() 
         {
-            counts.Add(0, 0);
-            counts.Add(1, 0);
-            counts.Add(2, 0);
+            counts.Add(RPSMove.Rock, 0);
+            counts.Add(RPSMove.Paper, 0);
+            counts.Add(RPSMove.Scissors, 0);
         }
     }
-
     static class NGramPredictor
     {
         private static Hashtable data = new Hashtable();
-        private static int nValue = Screen.width + 1;
+        //nValue = window + 1
+        public static int nValue = 4;
 
         public static void registerSequence(List<RPSMove> actions)
         {
-            RPSMove[] key = actions.GetRange(0,nValue).ToArray();
-            RPSMove value = actions[nValue];
-            KeyDataRecord keyData;
-            if (!data.ContainsKey(key))
+            //We don't want an inclusive range, because the value is the last action
+            //We want this to be the size of the window
+            RPSMove[] key = actions.GetRange(0,nValue - 1).ToArray();
+            //I changed it to a string since array comparison is by reference, so wasn't working
+            string keyString = "";
+            for (int i = 0; i < key.Length; i++)
             {
-                data.Add(key, new KeyDataRecord());
+                keyString += key[i].ToString();
             }
-            keyData = (KeyDataRecord)data[key];
-            if (value == RPSMove.Rock) keyData.counts[0] = (int)keyData.counts[0] + 1;
-            else if (value == RPSMove.Paper) keyData.counts[1] = (int)keyData.counts[1] + 1;
-            else if (value == RPSMove.Scissors) keyData.counts[1] = (int)keyData.counts[1] + 1;
+            //Then the last action is the value
+            RPSMove value = actions[nValue - 1];
+            KeyDataRecord keyData;
+            if (!data.Contains(keyString))
+            {
+                data.Add(keyString, new KeyDataRecord());
+            }
+            keyData = (KeyDataRecord)data[keyString];
+            keyData.counts[value] = (int)keyData.counts[value] + 1;
             keyData.total += 1;
 
         }
 
         public static RPSMove getMostLikely(RPSMove[] actions)
         {
-            KeyDataRecord keyData = data[actions] as KeyDataRecord;
+            //Same reason as above, it's easier to compare strings than arrays
+            string key = "";
+            for (int i = 0; i < actions.Length; i++)
+            {
+                key += actions[i].ToString();
+            }
+            KeyDataRecord keyData = data[key] as KeyDataRecord;
             int highestValue = 0;
             RPSMove bestAction = 0;
+            
+            //if there's no data choose randomly
+            if (keyData == null)
+            {
+                return RockPaperScissors.CharToMove(RockPaperScissors.RandomMove());
+            }
 
-            actions = keyData.counts.Keys as RPSMove[];
-            foreach (RPSMove action in actions)
+            //Otherwise get the best action
+            RPSMove[] actionArr = new RPSMove[keyData.counts.Keys.Count];
+            keyData.counts.Keys.CopyTo(actionArr, 0);
+            foreach (RPSMove action in actionArr)
             {
                 if ((int)keyData.counts[action] > highestValue)
                 {
@@ -110,13 +134,23 @@ public class PlayerInterface : MonoBehaviour
                     sequence.Add(RPSMove.Scissors);
                 }
                 else return;
-
-                NGramPredictor.registerSequence(sequence);
+                //if our sequence is larger than our window, remove the first in the sequence
+                if(sequence.Count > NGramPredictor.nValue)
+                {
+                    sequence.RemoveAt(0);
+                }
+                //Default to a random move
+                RPSMove predMove = RockPaperScissors.CharToMove(RockPaperScissors.RandomMove());
+                //Once we have enough moves for our sequence start registering them and predicting moves
+                if (sequence.Count == NGramPredictor.nValue)
+                {
+                    NGramPredictor.registerSequence(sequence);
+                    //Then use the previous window of moves to predict the next
+                    predMove = NGramPredictor.getMostLikely(sequence.GetRange(0, NGramPredictor.nValue - 1).ToArray());
+                }
                 // Ask the ngram AI to predict what the player will choose..
                 // You will need to implement this code and any history tracking it requires.
                 // For now, we will predict a move at random.
-                char predicted = RockPaperScissors.RandomMove();
-                RPSMove predMove = RockPaperScissors.CharToMove(predicted);
                 output += "\nThe NGram AI predicts you will play: " + predMove;
 
                 // Given the predicted user move, choose the move that will win against it.
@@ -147,6 +181,7 @@ public class PlayerInterface : MonoBehaviour
 
                 // Output the combined output string to the log.
                 Debug.Log(output);
+                resultText.text = output;
             }
         }
     }
