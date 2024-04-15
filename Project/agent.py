@@ -483,6 +483,7 @@ if __name__ == '__main__':
 
     dict = {}
     values=[]
+    av = 0
     for i in range(200):
         
         actionPath = []
@@ -514,7 +515,6 @@ if __name__ == '__main__':
         special_data['ale.lives'] = 3
         observation = env.reset()[0]
         step = 0
-        
         last_life = info.get("lives")
         while not terminated:
             
@@ -522,24 +522,24 @@ if __name__ == '__main__':
             actionPath.append(int(action))
             #pdb.set_trace()
             observation, reward, terminated, truncated, info = env.step(action)
-            if last_life != info.get("lives"):
-                score -= (4 - info.get("lives")) * 50
-                last_life = info.get("lives")
+            #if last_life != info.get("lives"):
+            #    score -= (4 - info.get("lives")) * 50
+            #    last_life = info.get("lives")
             score += reward
             #env.render()
-        
-        if(len(values) < 10):
-            values.append(score);
-            dict[len(dict)] = actionPath;
-        else:
-            s = min(values)
-            if score > s:
-                dict[values.index(s)] = actionPath
-                values[values.index(s)] = score
+        av += score
+        #if(len(values) < 10):
+            #values.append(score);
+            #dict[len(dict)] = actionPath;
+        #else:
+         #   s = min(values)
+          #  if score > s:
+           #     dict[values.index(s)] = actionPath
+            #    values[values.index(s)] = score
         # Close the env and write monitor result info to disk
         print ("Your score: %d" % score)
         env.close()
-
-    for file in range(10):
-        with open(f'output{file}.txt', 'w') as filehandle:
-            json.dump(dict[file], filehandle)
+    print("Average score: ", av/200)
+    #for file in range(10):
+     #   with open(f'output{file}.txt', 'w') as filehandle:
+      #      json.dump(dict[file], filehandle)

@@ -226,7 +226,6 @@ def run_model(count = 100):
             averagePerformance += reward
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
-
             if terminated:
                 state = None
             else:
